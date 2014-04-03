@@ -30,7 +30,7 @@ describe('pubsub :: ', function() {
 
       before(function(done) {
         this.timeout(10000);
-        appHelper.buildAndLiftWithTwoSockets(appName, {verbose: false}, function(err, sails, _socket1, _socket2) {
+        appHelper.buildAndLiftWithTwoSockets(appName, {silly: false}, function(err, sails, _socket1, _socket2) {
           if (err) {throw new Error(err);}
           sailsprocess = sails;
           socket1 = _socket1;
@@ -169,6 +169,8 @@ describe('pubsub :: ', function() {
       });
 
 
+      // TODO: make this test work without relying on previous tests.
+      // (i.e. bootstrap some data in a `before()`)
       it ('removing the user from the pet via DELETE /user/1/pets should result a correct `pet` event being received by all subscribers', function(done) {
 
         socket1.on('pet', function(message) {
@@ -179,7 +181,15 @@ describe('pubsub :: ', function() {
           done();
         })
 
-        socket2.delete('/user/1/pets', {pet_id:1});
+        // Avoiding this case temporarily:
+        // socket2.delete('/user/1/pets', {pet_id:1}, function (body, jwr) {
+
+        // Instead, use:
+        socket2.delete('/user/1/pets/1', {}, function (body, jwr) {
+          // TODO:
+          // when new sails.io.js client is being used in tests,
+          // ensure that a valid response came back from the server here.
+        });
 
       });
 
@@ -222,6 +232,30 @@ describe('pubsub :: ', function() {
         })
 
         socket1.delete('/pet/1');
+
+      });
+
+      it ('creating a new pet and adding it via POST /user/1/pets should result in a `pet` event being received by all subscribers', function(done) {
+
+        socket1.on('pet', function(message) {
+          assert(message.id === 2 && message.verb == 'created' && message.data.name == 'alice', Err.badResponse(message));
+          done();
+        })
+
+        socket1.get('/pet/watch', function() {
+          socket2.post('/user/1/pets', {name:'alice'});
+        });
+
+      });
+
+      it ('creating a new pet and adding it via POST /user/1/pets should result in a `user` event being received by all subscribers', function(done) {
+
+        socket1.on('user', function(message) {
+          assert(message.id === 1 && message.verb == 'addedTo' && message.attribute == 'pets' && message.addedId == 3, Err.badResponse(message));
+          done();
+        })
+
+        socket2.post('/user/1/pets', {name:'fido'});
 
       });
 
