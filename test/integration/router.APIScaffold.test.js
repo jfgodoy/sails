@@ -55,7 +55,7 @@ describe('router :: ', function() {
         httpHelper.testRoute('get', {
           url: 'empty/create',
           json: true
-        }, function(err, response) {
+        }, function(err, response, body) {
           if (err) return done(new Error(err));
 
           assert(response.body.id === 1, Err.badResponse(response));
@@ -128,6 +128,22 @@ describe('router :: ', function() {
           if (err) return done(new Error(err));
 
           assert(response.body.foo === 'bar', Err.badResponse(response));
+          done();
+        });
+      });
+    });
+
+    describe('a post request to /:controller/:id', function() {
+
+      it('should return JSON for the updated instance of the test model', function(done) {
+
+        httpHelper.testRoute('put', {
+          url: 'empty/1?foo=baz',
+          json: true
+        }, function(err, response) {
+          if (err) return done(new Error(err));
+
+          assert(response.body.foo === 'baz', Err.badResponse(response));
           done();
         });
       });

@@ -1,14 +1,14 @@
 /**
  * Module dependencies
  */
-var $Sails = require('root-require')('test/unit/helpers/sails');
-var $Router = require('root-require')('test/unit/helpers/router');
+var $Sails = require('root-require')('test/helpers/sails');
+var $Router = require('root-require')('test/helpers/router');
 
 
 
 describe('sails.router.unbind', function (){
 
-	$Sails.load.withAllHooksDisabled();
+	var sails = $Sails.load.withAllHooksDisabled();
 
 
 	$Router.unbind('get /foo')
